@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainBattle - Arena Kuis Mata Pelajaran</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    body {
+      background-color: #090a11;
+      color: #f8fafc;
+      overflow-x: hidden;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0d0e17;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #23263a;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #7c3aed;
+    }
+
+    /* Hero Card Glow & Grid */
+    .hero-banner {
+      background: radial-gradient(circle at 75% 50%, rgba(124, 58, 237, 0.25) 0%, rgba(30, 27, 75, 0.45) 45%, #111322 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-grid-overlay {
+      background-image: 
+        linear-gradient(to right, rgba(139, 92, 246, 0.06) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(139, 92, 246, 0.06) 1px, transparent 1px);
+      background-size: 36px 36px;
+    }
+    .brain-neon-glow {
+      filter: drop-shadow(0 0 18px rgba(168, 85, 247, 0.65));
+      animation: floatBrain 4s ease-in-out infinite;
+    }
+    @keyframes floatBrain {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+    .orbit-ring {
+      animation: spinSlow 24s linear infinite;
+    }
+    @keyframes spinSlow {
+      from { transform: rotate(-18deg); }
+      to { transform: rotate(342deg); }
+    }
+    .glass-pill {
+      background: rgba(15, 17, 30, 0.78);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(139, 92, 246, 0.28);
+    }
+    .nav-item-active {
+      background: linear-gradient(90deg, rgba(124, 58, 237, 0.22) 0%, rgba(124, 58, 237, 0.08) 100%);
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex bg-[#090a11] text-slate-100 selection:bg-violet-600 selection:text-white">
+
+  <!-- ==================== AUTH SCREEN (LOGIN / REGISTER) ==================== -->
+  <div id="auth-screen" class="fixed inset-0 z-50 bg-[#090a11] flex items-center justify-center p-4 overflow-y-auto">
+    <div class="hero-grid-overlay absolute inset-0 pointer-events-none opacity-60"></div>
+    <div class="absolute w-[420px] h-[420px] rounded-full bg-violet-600/15 blur-[110px] pointer-events-none"></div>
+
+    <div class="relative z-10 w-full max-w-md bg-[#111320] border border-[#1f2336] rounded-3xl p-7 sm:p-8 shadow-2xl">
+      <!-- Logo -->
+      <div class="flex flex-col items-center text-center mb-7">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-600 to-purple-700 flex items-center justify-center shadow-lg shadow-violet-600/30 mb-3">
+          <i data-lucide="brain" class="w-7 h-7 text-white"></i>
+        </div>
+        <h1 class="text-2xl font-extrabold tracking-tight text-white">Brain<span class="text-violet-400">Battle</span></h1>
+        <p class="text-xs text-slate-400 mt-1">Arena Kuis Mata Pelajaran &amp; Edukasi Interaktif</p>
+      </div>
+
+      <!-- Tab Switch -->
+      <div class="grid grid-cols-2 gap-1.5 bg-[#0b0d17] p-1.5 rounded-xl border border-[#1e2235] mb-6">
+        <button id="tab-login" onclick="switchAuthTab('login')" class="py-2 rounded-lg text-xs font-bold bg-violet-600 text-white transition-all">
+          Masuk Akun
+        </button>
+        <button id="tab-register" onclick="switchAuthTab('register')" class="py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all">
+          Daftar Baru
+        </button>
+      </div>
+
+      <!-- Error / Info Alert -->
+      <div id="auth-alert" class="hidden mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-300 flex items-center gap-2">
+        <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+        <span id="auth-alert-text">Pesan error</span>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Username atau Email</label>
+          <div class="relative">
+            <i data-lucide="user" class="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input id="login-username" type="text" required placeholder="Contoh: ikmal" class="w-full bg-[#0b0d17] border border-[#22263c] focus:border-violet-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-colors" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Kata Sandi</label>
+          <div class="relative">
+            <i data-lucide="lock" class="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input id="login-password" type="password" required placeholder="••••••••" class="w-full bg-[#0b0d17] border border-[#22263c] focus:border-violet-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-colors" />
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm shadow-lg shadow-violet-600/25 transition-all flex items-center justify-center gap-2">
+          <span>Masuk ke Arena</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+
+        <div class="relative py-2 flex items-center justify-center">
+          <div class="border-t border-[#1e2235] w-full"></div>
+          <span class="bg-[#111320] px-3 text-[11px] text-slate-500 uppercase tracking-wider">atau</span>
+          <div class="border-t border-[#1e2235] w-full"></div>
+        </div>
+
+        <button type="button" onclick="loginAsDemo()" class="w-full py-2.5 rounded-xl bg-[#16192b] hover:bg-[#1d2138] border border-[#2a2f4c] text-slate-200 font-semibold text-xs transition-all flex items-center justify-center gap-2">
+          <i data-lucide="zap" class="w-3.5 h-3.5 text-violet-400"></i>
+          <span>Masuk Cepat Akun Demo (ikmal)</span>
+        </button>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form id="register-form" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Nama Lengkap / Panggilan</label>
+          <div class="relative">
+            <i data-lucide="smile" class="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input id="reg-name" type="text" required placeholder="Nama kamu" class="w-full bg-[#0b0d17] border border-[#22263c] focus:border-violet-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-colors" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Username</label>
+            <input id="reg-username" type="text" required placeholder="username" class="w-full bg-[#0b0d17] border border-[#22263c] focus:border-violet-500 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-colors" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Kelas / Jenjang</label>
+            <select id="reg-grade" class="w-full bg-[#0b0d17] border border-[#22263c] focus:border-violet-500 rounded-xl px-3 py-2.5 text-sm text-white outline-none transition-colors">
+              <option value="SD">SD / Sederajat</option>
+              <option value="SMP">SMP / Sederajat</option>
+              <option value="SMA" selected>SMA / SMK</option>
+              <option value="Umum">Umum</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Kata Sandi</label>
+          <div class="relative">
+            <i data-lucide="lock" class="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input id="reg-password" type="password" required minlength="4" placeholder="Minimal 4 karakter" class="w-full bg-[#0b0d17] border border-[#22263c] focus:border-violet-500 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition-colors" />
+          </div>
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm shadow-lg shadow-violet-600/25 transition-all flex items-center justify-center gap-2">
+          <span>Buat Akun &amp; Mulai Belajar</span>
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN APP SHELL ==================== -->
+  <div id="app-shell" class="hidden min-h-screen w-full flex">
+
+    <!-- Mobile Overlay -->
+    <div id="mobile-overlay" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-black/60 z-30 hidden lg:hidden backdrop-blur-xs"></div>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-64 bg-[#0c0d16] border-r border-[#1a1d2e] flex flex-col justify-between transition-transform duration-300 -translate-x-full lg:translate-x-0 shrink-0">
+      <div>
+        <!-- Brand Logo -->
+        <div class="h-16 px-6 flex items-center gap-3 border-b border-[#1a1d2e]/60">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 via-violet-600 to-purple-700 flex items-center justify-center shadow-lg shadow-violet-600/30">
+            <i data-lucide="brain" class="w-5 h-5 text-white"></i>
+          </div>
+          <span class="text-lg font-extrabold tracking-tight text-white">Brain<span class="text-violet-400">Battle</span></span>
+        </div>
+
+        <!-- Menu Utama -->
+        <div class="px-4 pt-6">
+          <p class="px-3 text-[10px] font-bold tracking-[0.14em] text-slate-500 uppercase mb-3">Menu Utama</p>
+          <nav class="space-y-1.5">
+            <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-btn nav-item-active w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all">
+              <i data-lucide="sparkles" class="w-4 h-4 text-violet-400"></i>
+              <span>Dashboard</span>
+            </button>
+            <button onclick="switchView('arena')" id="nav-arena" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-all">
+              <i data-lucide="swords" class="w-4 h-4 text-slate-400"></i>
+              <span>Game Modes</span>
+            </button>
+            <button onclick="switchView('leaderboard')" id="nav-leaderboard" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-all">
+              <i data-lucide="trophy" class="w-4 h-4 text-slate-400"></i>
+              <span>Leaderboard</span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- Quick Subject Filter in Sidebar -->
+        <div class="px-4 pt-7">
+          <p class="px-3 text-[10px] font-bold tracking-[0.14em] text-slate-500 uppercase mb-3">Mata Pelajaran</p>
+          <div class="space-y-1">
+            <button onclick="startSubjectQuiz('matematika')" class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/[0.03] transition-colors">
+              <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-violet-500"></span>Matematika</span>
+              <span class="text-[10px] text-slate-500">5 Soal</span>
+            </button>
+            <button onclick="startSubjectQuiz('ipa')" class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/[0.03] transition-colors">
+              <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>IPA &amp; Sains</span>
+              <span class="text-[10px] text-slate-500">5 Soal</span>
+            </button>
+            <button onclick="startSubjectQuiz('ips')" class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/[0.03] transition-colors">
+              <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-400"></span>IPS &amp; Sejarah</span>
+              <span class="text-[10px] text-slate-500">5 Soal</span>
+            </button>
+            <button onclick="startSubjectQuiz('inggris')" class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-white/[0.03] transition-colors">
+              <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-sky-400"></span>Bahasa Inggris</span>
+              <span class="text-[10px] text-slate-500">5 Soal</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Profile Footer -->
+      <div class="p-4 border-t border-[#1a1d2e]">
+        <div class="flex items-center justify-between p-2.5 rounded-xl bg-[#111320] border border-[#1d2136]">
+          <div class="flex items-center gap-3 min-w-0">
+            <div id="sidebar-avatar" class="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-sm font-bold text-white shadow-inner shrink-0">
+              I
+            </div>
+            <div class="min-w-0">
+              <p id="sidebar-username" class="text-xs font-bold text-white leading-tight truncate">ikmal</p>
+              <p id="sidebar-level-tag" class="text-[10px] text-slate-400 mt-0.5 truncate">Level 01 Player</p>
+            </div>
+          </div>
+          <button onclick="logoutUser()" title="Keluar Akun" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors shrink-0">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT WRAPPER -->
+    <div class="flex-1 flex flex-col min-w-0">
+
+      <!-- TOP HEADER BAR -->
+      <header class="h-16 px-5 lg:px-8 border-b border-[#1a1d2e]/70 flex items-center justify-between bg-[#090a11]/90 backdrop-blur-md sticky top-0 z-20">
+        <div class="flex items-center gap-3">
+          <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-lg bg-[#131524] border border-[#1f2338] text-slate-300">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          <!-- Breadcrumb -->
+          <div class="flex items-center gap-2 text-[11px] font-bold tracking-[0.12em] uppercase">
+            <span class="text-slate-500">ARENA</span>
+            <span class="text-slate-600">/</span>
+            <span id="header-breadcrumb" class="text-slate-200">DASHBOARD</span>
+          </div>
+        </div>
+
+        <!-- Server Status & User Pill -->
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#111320] border border-[#1e2235]">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-xs font-medium text-slate-300">Server online</span>
+          </div>
+          <div id="top-avatar" class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 border border-white/15 flex items-center justify-center text-xs font-bold text-white shadow-md">
+            I
+          </div>
+        </div>
+      </header>
+
+      <!-- CONTENT AREA -->
+      <main class="flex-1 p-5 lg:p-8 max-w-6xl w-full mx-auto">
+
+        <!-- ==================== VIEW 1: DASHBOARD ==================== -->
+        <section id="view-dashboard" class="space-y-6">
+          
+          <!-- HERO BANNER CARD -->
+          <div class="hero-banner rounded-3xl border border-[#242842] p-7 sm:p-10 relative shadow-2xl">
+            <div class="hero-grid-overlay absolute inset-0 pointer-events-none"></div>
+            
+            <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              <!-- Left Text Content -->
+              <div class="lg:col-span-7 space-y-5">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/25">
+                  <span class="w-1.5 h-1.5 rounded-full bg-violet-400"></span>
+                  <span class="text-[10px] font-bold tracking-[0.15em] text-violet-300 uppercase">THE BATTLEFIELD IS READY</span>
+                </div>
+
+                <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight leading-[1.08] text-white">
+                  READY TO<br/>
+                  <span class="bg-gradient-to-r from-indigo-300 via-violet-300 to-purple-400 bg-clip-text text-transparent">OUTSMART?</span>
+                </h1>
+
+                <div class="space-y-1 text-sm text-slate-400">
+                  <p>Selamat datang, <span id="hero-username" class="text-slate-200 font-semibold">ikmal</span>!</p>
+                  <p>Asah kemampuanmu dan taklukkan arena.</p>
+                </div>
+
+                <div class="pt-2 flex flex-wrap items-center gap-3">
+                  <button onclick="switchView('arena')" class="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 active:scale-[0.99] text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-lg shadow-violet-600/30 transition-all cursor-pointer">
+                    <span>Explore Arena</span>
+                    <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                  </button>
+                  <button onclick="toggleHowToModal(true)" class="px-5 py-2.5 rounded-xl bg-[#15182b] hover:bg-[#1c2038] border border-[#2a2f4c] text-slate-300 hover:text-white text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer">
+                    <span>How to play</span>
+                    <i data-lucide="help-circle" class="w-4 h-4 text-violet-400"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Right Glowing Brain Graphic -->
+              <div class="lg:col-span-5 flex items-center justify-center relative min-h-[210px]">
+                <div class="absolute w-52 h-52 rounded-full bg-violet-600/20 blur-3xl"></div>
+                
+                <!-- Orbital Ring SVG -->
+                <svg class="w-64 h-64 absolute opacity-40 orbit-ring pointer-events-none" viewBox="0 0 260 260" fill="none">
+                  <ellipse cx="130" cy="130" rx="115" ry="52" stroke="url(#orbitGrad)" stroke-width="1.5" stroke-dasharray="6 6" />
+                  <defs>
+                    <linearGradient id="orbitGrad" x1="0" y1="0" x2="260" y2="260" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#a855f7" />
+                      <stop offset="1" stop-color="#6366f1" stop-opacity="0.1" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+
+                <!-- Floating Sparkles -->
+                <i data-lucide="sparkles" class="w-5 h-5 text-sky-400 absolute top-4 left-12 animate-pulse"></i>
+                <i data-lucide="sparkle" class="w-4 h-4 text-violet-400 absolute bottom-6 right-10 opacity-75"></i>
+
+                <!-- Floating Badge: THINK FAST -->
+                <div class="glass-pill px-3 py-1.5 rounded-lg flex items-center gap-1.5 absolute top-5 right-2 sm:right-4 shadow-lg">
+                  <i data-lucide="zap" class="w-3.5 h-3.5 text-violet-400"></i>
+                  <span class="text-[10px] font-bold tracking-wider text-slate-200 uppercase">THINK FAST</span>
+                </div>
+
+                <!-- Center Neon Brain SVG -->
+                <div class="brain-neon-glow relative z-10 p-5">
+                  <svg class="w-24 h-24 text-purple-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/>
+                    <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/>
+                    <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/>
+                    <path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/>
+                    <path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/>
+                    <path d="M3.477 10.896a4 4 0 0 1 .585-.396"/>
+                    <path d="M19.938 10.5a4 4 0 0 1 .585.396"/>
+                    <path d="M6 18a4 4 0 0 1-1.967-.516"/>
+                    <path d="M19.967 17.484A4 4 0 0 1 18 18"/>
+                  </svg>
+                </div>
+
+                <!-- Floating Badge: WIN XP -->
+                <div class="glass-pill px-3 py-1.5 rounded-lg flex items-center gap-1.5 absolute bottom-4 left-4 sm:left-8 shadow-lg">
+                  <i data-lucide="trophy" class="w-3.5 h-3.5 text-amber-400"></i>
+                  <span class="text-[10px] font-bold tracking-wider text-slate-200 uppercase">WIN XP</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3 STAT CARDS ROW -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Card 1: TOTAL MATCHES -->
+            <div class="bg-[#111320] border border-[#1d2136] hover:border-violet-500/30 rounded-2xl p-5 flex items-center justify-between transition-colors">
+              <div class="flex items-center gap-4">
+                <div class="w-11 h-11 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
+                  <i data-lucide="users" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <p class="text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase">TOTAL MATCHES</p>
+                  <p id="stat-matches" class="text-2xl font-extrabold text-white mt-0.5">0</p>
+                </div>
+              </div>
+              <span class="text-xs text-slate-500 font-medium">Played</span>
+            </div>
+
+            <!-- Card 2: TOTAL WINS -->
+            <div class="bg-[#111320] border border-[#1d2136] hover:border-sky-500/30 rounded-2xl p-5 flex items-center justify-between transition-colors">
+              <div class="flex items-center gap-4">
+                <div class="w-11 h-11 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
+                  <i data-lucide="trophy" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <p class="text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase">TOTAL WINS</p>
+                  <p id="stat-wins" class="text-2xl font-extrabold text-white mt-0.5">0</p>
+                </div>
+              </div>
+              <span class="text-xs text-slate-500 font-medium">Victories</span>
+            </div>
+
+            <!-- Card 3: TOTAL XP -->
+            <div class="bg-[#111320] border border-[#1d2136] hover:border-fuchsia-500/30 rounded-2xl p-5 flex items-center justify-between transition-colors">
+              <div class="flex items-center gap-4">
+                <div class="w-11 h-11 rounded-xl bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center text-fuchsia-400">
+                  <i data-lucide="zap" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <p class="text-[10px] font-bold tracking-[0.12em] text-slate-400 uppercase">TOTAL XP</p>
+                  <p id="stat-xp" class="text-2xl font-extrabold text-white mt-0.5">10 XP</p>
+                </div>
+              </div>
+              <span id="stat-level-badge" class="text-xs text-slate-400 font-medium">Level 1</span>
+            </div>
+          </div>
+
+          <!-- LEVEL PROGRESS BAR CARD -->
+          <div class="bg-[#111320] border border-[#1d2136] rounded-2xl p-6 space-y-3">
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="text-[10px] font-bold tracking-[0.14em] text-slate-400 uppercase">LEVEL PROGRESS</p>
+                <h3 id="progress-level-title" class="text-lg font-extrabold text-white mt-0.5">Level 1</h3>
+              </div>
+              <span id="progress-xp-fraction" class="text-xs font-bold text-violet-400">10/100 XP</span>
+            </div>
+
+            <div class="w-full h-2.5 bg-[#191d30] rounded-full overflow-hidden">
+              <div id="progress-bar-fill" class="h-full bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 rounded-full transition-all duration-500" style="width: 10%;"></div>
+            </div>
+
+            <p id="progress-xp-remaining" class="text-xs text-slate-400">90 XP lagi menuju Level 2</p>
+          </div>
+
+          <!-- QUICK SUBJECTS SECTION ON DASHBOARD -->
+          <div class="pt-2 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-base font-bold text-white">Pilih Mata Pelajaran</h2>
+                <p class="text-xs text-slate-400">Selesaikan kuis mata pelajaran untuk mengumpulkan XP dan naik level</p>
+              </div>
+              <button onclick="switchView('arena')" class="text-xs font-semibold text-violet-400 hover:text-violet-300 flex items-center gap-1">
+                Lihat Semua <i data-lucide="chevron-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <div id="dashboard-subjects-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ==================== VIEW 2: GAME MODES / ARENA ==================== -->
+        <section id="view-arena" class="hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#111320] border border-[#1d2136] rounded-2xl p-6">
+            <div>
+              <span class="text-[10px] font-bold tracking-[0.15em] text-violet-400 uppercase">ARENA BELAJAR</span>
+              <h2 class="text-2xl font-extrabold text-white mt-1">Pilih Mode &amp; Mata Pelajaran</h2>
+              <p class="text-xs text-slate-400 mt-1">Setiap jawaban benar bernilai +20 XP. Raih skor minimal 80% untuk mencetak Victory!</p>
+            </div>
+            <!-- Mode Selector -->
+            <div class="flex items-center gap-2 bg-[#0b0d17] p-1.5 rounded-xl border border-[#1e2235]">
+              <button id="mode-btn-latihan" onclick="setGameMode('latihan')" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-violet-600 text-white transition-all">
+                Mode Santai
+              </button>
+              <button id="mode-btn-blitz" onclick="setGameMode('blitz')" class="px-3.5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center gap-1.5">
+                <i data-lucide="timer" class="w-3.5 h-3.5 text-amber-400"></i> Blitz (15s/soal)
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter Jenjang -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button onclick="filterSubjects('all')" class="filter-chip px-3.5 py-1.5 rounded-full text-xs font-semibold bg-violet-600 text-white" data-filter="all">Semua Mapel</button>
+            <button onclick="filterSubjects('eksakta')" class="filter-chip px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#131626] text-slate-400 hover:text-white border border-[#22263c]" data-filter="eksakta">Sains &amp; Hitungan</button>
+            <button onclick="filterSubjects('sosial')" class="filter-chip px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#131626] text-slate-400 hover:text-white border border-[#22263c]" data-filter="sosial">Sosial &amp; Bahasa</button>
+          </div>
+
+          <!-- All Subjects Grid -->
+          <div id="arena-subjects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- Populated by JS -->
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 3: ACTIVE QUIZ ARENA ==================== -->
+        <section id="view-quiz" class="hidden max-w-3xl mx-auto space-y-6">
+          <!-- Quiz Top Bar -->
+          <div class="bg-[#111320] border border-[#1d2136] rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-4">
+            <button onclick="quitQuiz()" class="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-rose-400 transition-colors">
+              <i data-lucide="arrow-left" class="w-4 h-4"></i> Keluar Kuis
+            </button>
+
+            <div class="text-center">
+              <span id="quiz-subject-badge" class="text-[10px] font-bold tracking-widest uppercase text-violet-400">MATEMATIKA</span>
+              <p id="quiz-progress-text" class="text-xs font-semibold text-slate-300 mt-0.5">Pertanyaan 1 dari 5</p>
+            </div>
+
+            <div id="quiz-timer-box" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#181b2e] border border-[#272c47] text-xs font-bold text-amber-400">
+              <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+              <span id="quiz-timer-text">∞</span>
+            </div>
+          </div>
+
+          <!-- Progress Line -->
+          <div class="w-full h-1.5 bg-[#16192b] rounded-full overflow-hidden">
+            <div id="quiz-progress-bar" class="h-full bg-violet-500 transition-all duration-300" style="width: 20%;"></div>
+          </div>
+
+          <!-- Question Card -->
+          <div class="bg-[#111320] border border-[#1f243b] rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
+            <div class="space-y-2">
+              <span id="quiz-difficulty-tag" class="inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/25">Level Dasar</span>
+              <h3 id="quiz-question-text" class="text-lg sm:text-xl font-bold text-white leading-relaxed">
+                Memuat pertanyaan...
+              </h3>
+            </div>
+
+            <!-- Options List -->
+            <div id="quiz-options-container" class="space-y-3">
+              <!-- Options injected by JS -->
+            </div>
+
+            <!-- Explanation Box (Shown after answering) -->
+            <div id="quiz-explanation-box" class="hidden p-4 rounded-2xl bg-[#161a2e] border border-violet-500/30 space-y-1.5">
+              <div class="flex items-center gap-2 text-xs font-bold text-violet-300">
+                <i data-lucide="lightbulb" class="w-4 h-4 text-amber-400"></i>
+                <span>Pembahasan Materi:</span>
+              </div>
+              <p id="quiz-explanation-text" class="text-xs sm:text-sm text-slate-300 leading-relaxed"></p>
+            </div>
+
+            <!-- Next Button -->
+            <div class="flex justify-end pt-2">
+              <button id="quiz-next-btn" onclick="nextQuestion()" class="hidden px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold flex items-center gap-2 shadow-lg shadow-violet-600/25 transition-all">
+                <span id="quiz-next-label">Soal Berikutnya</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 4: QUIZ RESULT ==================== -->
+        <section id="view-result" class="hidden max-w-xl mx-auto">
+          <div class="bg-[#111320] border border-[#232842] rounded-3xl p-8 text-center space-y-6 relative overflow-hidden">
+            <div class="hero-grid-overlay absolute inset-0 pointer-events-none opacity-50"></div>
+            <div class="relative z-10 space-y-5">
+              <div id="result-icon-wrap" class="w-20 h-20 rounded-2xl bg-violet-600/20 border border-violet-500/30 mx-auto flex items-center justify-center text-violet-400 shadow-lg">
+                <i data-lucide="trophy" class="w-10 h-10"></i>
+              </div>
+
+              <div>
+                <span id="result-badge" class="px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">VICTORY ACHIEVED</span>
+                <h2 id="result-title" class="text-2xl sm:text-3xl font-extrabold text-white mt-3">Luar Biasa!</h2>
+                <p id="result-subtitle" class="text-xs sm:text-sm text-slate-400 mt-1">Kamu berhasil menaklukkan kuis mata pelajaran ini.</p>
+              </div>
+
+              <!-- Score Summary Boxes -->
+              <div class="grid grid-cols-3 gap-3 pt-2">
+                <div class="bg-[#0b0d17] border border-[#1d2136] rounded-2xl p-3.5">
+                  <p class="text-[10px] font-bold text-slate-400 uppercase">SKOR</p>
+                  <p id="result-score" class="text-xl font-extrabold text-white mt-1">100%</p>
+                </div>
+                <div class="bg-[#0b0d17] border border-[#1d2136] rounded-2xl p-3.5">
+                  <p class="text-[10px] font-bold text-slate-400 uppercase">BENAR</p>
+                  <p id="result-correct" class="text-xl font-extrabold text-emerald-400 mt-1">5/5</p>
+                </div>
+                <div class="bg-[#0b0d17] border border-[#1d2136] rounded-2xl p-3.5">
+                  <p class="text-[10px] font-bold text-slate-400 uppercase">XP DIDAPAT</p>
+                  <p id="result-xp" class="text-xl font-extrabold text-violet-400 mt-1">+100 XP</p>
+                </div>
+              </div>
+
+              <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
+                <button onclick="retryCurrentSubject()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#171b2e] hover:bg-[#1f243d] border border-[#2b3152] text-slate-200 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all">
+                  <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Main Lagi
+                </button>
+                <button onclick="switchView('dashboard')" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-violet-600/25 transition-all">
+                  <span>Kembali ke Dashboard</span>
+                  <i data-lucide="home" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW 5: LEADERBOARD ==================== -->
+        <section id="view-leaderboard" class="hidden space-y-6">
+          <div class="bg-[#111320] border border-[#1d2136] rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <span class="text-[10px] font-bold tracking-[0.15em] text-amber-400 uppercase">HALL OF FAME</span>
+              <h2 class="text-2xl font-extrabold text-white mt-1">Peringkat Pelajar Terbaik</h2>
+              <p class="text-xs text-slate-400 mt-1">Kumpulkan XP dari setiap mata pelajaran untuk naik ke posisi puncak!</p>
+            </div>
+            <div class="px-4 py-2.5 rounded-xl bg-violet-600/10 border border-violet-500/25 text-xs">
+              <span class="text-slate-400">Peringkat Kamu:</span>
+              <span id="my-rank-badge" class="font-extrabold text-violet-300 ml-1">#6</span>
+            </div>
+          </div>
+
+          <div class="bg-[#111320] border border-[#1d2136] rounded-2xl overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="border-b border-[#1d2136] text-[10px] font-bold tracking-wider text-slate-400 uppercase bg-[#0d0f1a]">
+                    <th class="py-3.5 px-5">Rank</th>
+                    <th class="py-3.5 px-5">Pelajar</th>
+                    <th class="py-3.5 px-5">Level</th>
+                    <th class="py-3.5 px-5">Victories</th>
+                    <th class="py-3.5 px-5 text-right">Total XP</th>
+                  </tr>
+                </thead>
+                <tbody id="leaderboard-tbody" class="divide-y divide-[#1a1e30] text-sm">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: HOW TO PLAY ==================== -->
+  <div id="howto-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/75 backdrop-blur-xs">
+    <div class="bg-[#121524] border border-[#262b47] rounded-3xl max-w-md w-full p-6 sm:p-7 space-y-5 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-violet-600/20 text-violet-400 flex items-center justify-center">
+            <i data-lucide="book-open" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-lg font-extrabold text-white">Cara Bermain BrainBattle</h3>
+        </div>
+        <button onclick="toggleHowToModal(false)" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs sm:text-sm text-slate-300">
+        <div class="p-3.5 rounded-xl bg-[#0c0e18] border border-[#1e2238] flex gap-3">
+          <span class="w-6 h-6 rounded-full bg-violet-600 text-white font-bold text-xs flex items-center justify-center shrink-0">1</span>
+          <p><strong class="text-white">Pilih Mata Pelajaran:</strong> Masuk ke menu <em>Game Modes</em> atau pilih langsung kartu pelajaran di Dashboard.</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-[#0c0e18] border border-[#1e2238] flex gap-3">
+          <span class="w-6 h-6 rounded-full bg-violet-600 text-white font-bold text-xs flex items-center justify-center shrink-0">2</span>
+          <p><strong class="text-white">Jawab &amp; Pahami Materi:</strong> Setiap soal dilengkapi pembahasan singkat agar kamu langsung paham konsepnya.</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-[#0c0e18] border border-[#1e2238] flex gap-3">
+          <span class="w-6 h-6 rounded-full bg-violet-600 text-white font-bold text-xs flex items-center justify-center shrink-0">3</span>
+          <p><strong class="text-white">Raih XP &amp; Victory:</strong> Dapatkan <span class="text-violet-400 font-bold">+20 XP</span> per jawaban benar. Skor ≥ 80% dihitung sebagai <span class="text-sky-400 font-bold">Victory</span>!</p>
+        </div>
+      </div>
+
+      <button onclick="toggleHowToModal(false)" class="w-full py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold transition-colors">
+        Mengerti, Mulai Belajar!
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+  <script>
+    // --- BANK SOAL MATA PELAJARAN ---
+    const SUBJECTS_DATA = [
+      {
+        id: 'matematika',
+        name: 'Matematika',
+        category: 'eksakta',
+        icon: 'calculator',
+        color: 'violet',
+        desc: 'Aljabar, aritmatika, geometri, dan logika hitungan dasar hingga menengah.',
+        questions: [
+          {
+            q: 'Jika 3x + 7 = 22, berapakah nilai dari 2x + 1?',
+            options: ['9', '11', '13', '15'],
+            answer: 1,
+            difficulty: 'Aljabar Dasar',
+            explanation: '3x = 22 - 7 → 3x = 15 → x = 5. Maka nilai 2x + 1 = 2(5) + 1 = 11.'
+          },
+          {
+            q: 'Sebuah segitiga siku-siku memiliki panjang alas 6 cm dan tinggi 8 cm. Berapakah panjang sisi miringnya?',
+            options: ['10 cm', '12 cm', '14 cm', '9 cm'],
+            answer: 0,
+            difficulty: 'Geometri',
+            explanation: 'Menggunakan teorema Pythagoras: c = √(6² + 8²) = √(36 + 64) = √100 = 10 cm.'
+          },
+          {
+            q: 'Hasil dari 25% dari 240 ditambah 15 adalah...',
+            options: ['65', '70', '75', '80'],
+            answer: 2,
+            difficulty: 'Aritmatika',
+            explanation: '25% × 240 = ¼ × 240 = 60. Kemudian 60 + 15 = 75.'
+          },
+          {
+            q: 'Suku ke-6 dari barisan aritmatika 4, 9, 14, 19, ... adalah...',
+            options: ['24', '29', '31', '34'],
+            answer: 1,
+            difficulty: 'Barisan Bilangan',
+            explanation: 'Beda (b) = 5. Suku ke-5 = 24, maka suku ke-6 = 24 + 5 = 29.'
+          },
+          {
+            q: 'Sebuah persegi memiliki luas 144 cm². Berapakah keliling persegi tersebut?',
+            options: ['36 cm', '44 cm', '48 cm', '52 cm'],
+            answer: 2,
+            difficulty: 'Bangun Datar',
+            explanation: 'Sisi persegi = √144 = 12 cm. Keliling = 4 × sisi = 4 × 12 = 48 cm.'
+          }
+        ]
+      },
+      {
+        id: 'ipa',
+        name: 'IPA & Sains',
+        category: 'eksakta',
+        icon: 'atom',
+        color: 'emerald',
+        desc: 'Fisika dasar, biologi sel, ekosistem, dan reaksi kimia sehari-hari.',
+        questions: [
+          {
+            q: 'Organel sel yang berfungsi sebagai tempat respirasi seluler dan penghasil energi (ATP) adalah...',
+            options: ['Ribosom', 'Mitokondria', 'Lisosom', 'Badan Golgi'],
+            answer: 1,
+            difficulty: 'Biologi Sel',
+            explanation: 'Mitokondria dikenal sebagai "powerhouse of the cell" karena menghasilkan energi ATP melalui respirasi sel.'
+          },
+          {
+            q: 'Perubahan wujud benda dari gas langsung menjadi padat tanpa melalui fase cair disebut...',
+            options: ['Menyublim', 'Mengembun', 'Mengkristal (Deposisi)', 'Membeku'],
+            answer: 2,
+            difficulty: 'Fisika Dasar',
+            explanation: 'Mengkristal atau deposisi adalah perubahan wujud dari gas menjadi padat, contohnya terbentuknya salju atau jelaga.'
+          },
+          {
+            q: 'Sebuah benda bermassa 4 kg didorong dengan gaya 20 Newton. Berapakah percepatan benda tersebut?',
+            options: ['4 m/s²', '5 m/s²', '16 m/s²', '80 m/s²'],
+            answer: 1,
+            difficulty: 'Hukum Newton',
+            explanation: 'Berdasarkan Hukum II Newton (F = m × a), maka a = F / m = 20 N / 4 kg = 5 m/s².'
+          },
+          {
+            q: 'Gas utama yang dibutuhkan tumbuhan hijau untuk melakukan proses fotosintesis adalah...',
+            options: ['Oksigen (O₂)', 'Nitrogen (N₂)', 'Karbon dioksida (CO₂)', 'Hidrogen (H₂)'],
+            answer: 2,
+            difficulty: 'Biologi Tumbuhan',
+            explanation: 'Tumbuhan menyerap karbon dioksida (CO₂) dan air (H₂O) dengan bantuan cahaya matahari untuk menghasilkan glukosa dan oksigen.'
+          },
+          {
+            q: 'Planet terbesar di dalam sistem Tata Surya kita adalah...',
+            options: ['Saturnus', 'Jupiter', 'Uranus', 'Neptunus'],
+            answer: 1,
+            difficulty: 'Astronomi',
+            explanation: 'Jupiter adalah planet terbesar di Tata Surya dengan diameter sekitar 11 kali diameter Bumi.'
+          }
+        ]
+      },
+      {
+        id: 'ips',
+        name: 'IPS & Sejarah',
+        category: 'sosial',
+        icon: 'globe',
+        color: 'amber',
+        desc: 'Sejarah kemerdekaan Indonesia, geografi nusantara, dan ekonomi dasar.',
+        questions: [
+          {
+            q: 'Peristiwa Rengasdengklok pada 16 Agustus 1945 bertujuan untuk...',
+            options: [
+              'Menyusun naskah UUD 1945',
+              'Mengamankan Soekarno-Hatta dari pengaruh Jepang agar segera memproklamasikan kemerdekaan',
+              'Membentuk tentara keamanan rakyat',
+              'Menyerahkan kekuasaan kepada Sekutu'
+            ],
+            answer: 1,
+            difficulty: 'Sejarah Nasional',
+            explanation: 'Golongan muda membawa Soekarno dan Hatta ke Rengasdengklok agar tidak terpengaruh Jepang dan segera memproklamasikan kemerdekaan.'
+          },
+          {
+            q: 'Secara astronomis, wilayah Indonesia terletak pada koordinat...',
+            options: [
+              '6° LU - 11° LS dan 95° BT - 141° BT',
+              '6° LS - 11° LU dan 95° BB - 141° BB',
+              '11° LU - 6° LS dan 90° BT - 140° BT',
+              '5° LU - 10° LS dan 95° BT - 145° BT'
+            ],
+            answer: 0,
+            difficulty: 'Geografi Indonesia',
+            explanation: 'Letak astronomis Indonesia berada di 6° Lintang Utara (LU) sampai 11° Lintang Selatan (LS) dan 95° Bujur Timur (BT) sampai 141° Bujur Timur (BT).'
+          },
+          {
+            q: 'Dalam ilmu ekonomi, tindakan manusia untuk memenuhi kebutuhan hidup dengan pengorbanan sekecil-kecilnya disebut...',
+            options: ['Motif Ekonomi', 'Prinsip Ekonomi', 'Hukum Permintaan', 'Kegiatan Distribusi'],
+            answer: 1,
+            difficulty: 'Ekonomi Dasar',
+            explanation: 'Prinsip ekonomi adalah pedoman bertindak untuk mendapatkan hasil maksimal dengan pengorbanan tertentu atau hasil tertentu dengan pengorbanan minimal.'
+          },
+          {
+            q: 'Kerajaan Hindu tertua di Indonesia yang terletak di Kalimantan Timur adalah...',
+            options: ['Tarumanegara', 'Majapahit', 'Kutai', 'Sriwijaya'],
+            answer: 2,
+            difficulty: 'Sejarah Nusantara',
+            explanation: 'Kerajaan Kutai Martadipura (abad ke-4 M) di tepi Sungai Mahakam, Kalimantan Timur adalah kerajaan Hindu tertua di Indonesia dengan bukti prasasti Yupa.'
+          },
+          {
+            q: 'Garis khayal yang membagi waktu Indonesia menjadi tiga zona waktu (WIB, WITA, WIT) didasarkan pada garis...',
+            options: ['Lintang', 'Bujur', 'Khatulistiwa', 'Wallace'],
+            answer: 1,
+            difficulty: 'Geografi',
+            explanation: 'Pembagian zona waktu di Bumi ditentukan berdasarkan garis bujur (setiap selisih 15° bujur berbeda 1 jam).'
+          }
+        ]
+      },
+      {
+        id: 'inggris',
+        name: 'Bahasa Inggris',
+        category: 'sosial',
+        icon: 'languages',
+        color: 'sky',
+        desc: 'Grammar, tenses, vocabulary, dan pemahaman bacaan bahasa Inggris.',
+        questions: [
+          {
+            q: 'She _____ to the library every Saturday morning to borrow science books.',
+            options: ['go', 'goes', 'going', 'gone'],
+            answer: 1,
+            difficulty: 'Simple Present Tense',
+            explanation: 'Subjek orang ketiga tunggal ("She") pada Simple Present Tense memerlukan kata kerja berakhiran -s/-es ("goes").'
+          },
+          {
+            q: 'What is the synonym of the word "Enormous"?',
+            options: ['Tiny', 'Huge', 'Fragile', 'Narrow'],
+            answer: 1,
+            difficulty: 'Vocabulary',
+            explanation: '"Enormous" berarti sangat besar, sehingga sinonim yang paling tepat adalah "Huge".'
+          },
+          {
+            q: 'They _____ football when it suddenly started to rain yesterday.',
+            options: ['are playing', 'were playing', 'have played', 'play'],
+            answer: 1,
+            difficulty: 'Past Continuous',
+            explanation: 'Kejadian yang sedang berlangsung di masa lampau saat kejadian lain menyela menggunakan Past Continuous ("were playing").'
+          },
+          {
+            q: 'This puzzle is _____ than the one we solved last week.',
+            options: ['difficult', 'more difficult', 'most difficult', 'difficultly'],
+            answer: 1,
+            difficulty: 'Comparison Degree',
+            explanation: 'Kata sifat panjang (3 suku kata: dif-fi-cult) dalam bentuk perbandingan (comparative dengan "than") menggunakan "more difficult".'
+          },
+          {
+            q: 'Choose the correct passive voice: "The students clean the classroom every day."',
+            options: [
+              'The classroom is cleaned by the students every day.',
+              'The classroom was cleaned by the students every day.',
+              'The classroom is cleaning by the students every day.',
+              'The classroom has cleaned by the students every day.'
+            ],
+            answer: 0,
+            difficulty: 'Passive Voice',
+            explanation: 'Kalimat aktif Simple Present diubah ke pasif menggunakan pola: Object + is/am/are + Verb 3 ("is cleaned").'
+          }
+        ]
+      },
+      {
+        id: 'informatika',
+        name: 'Informatika & TIK',
+        category: 'eksakta',
+        icon: 'cpu',
+        color: 'indigo',
+        desc: 'Algoritma pemrograman, logika biner, jaringan komputer, dan keamanan digital.',
+        questions: [
+          {
+            q: 'Bilangan biner 1010 jika dikonversikan ke dalam bilangan desimal adalah...',
+            options: ['8', '10', '12', '14'],
+            answer: 1,
+            difficulty: 'Sistem Bilangan',
+            explanation: '1010₂ = (1×2³) + (0×2²) + (1×2¹) + (0×2⁰) = 8 + 0 + 2 + 0 = 10₁₀.'
+          },
+          {
+            q: 'Dalam pengembangan web, bahasa yang digunakan untuk mengatur tata letak dan gaya visual halaman adalah...',
+            options: ['HTML', 'CSS', 'Python', 'SQL'],
+            answer: 1,
+            difficulty: 'Web Development',
+            explanation: 'CSS (Cascading Style Sheets) mengatur warna, tata letak, font, dan tampilan responsif elemen HTML.'
+          },
+          {
+            q: 'Urutan langkah-langkah logis dan sistematis untuk menyelesaikan suatu masalah disebut...',
+            options: ['Kompilasi', 'Algoritma', 'Debugging', 'Hardware'],
+            answer: 1,
+            difficulty: 'Berpikir Komputasional',
+            explanation: 'Algoritma adalah serangkaian langkah terstruktur dan logis untuk memecahkan persoalan komputasi.'
+          },
+          {
+            q: 'Perangkat keras komputer yang berfungsi sebagai otak pemroses utama instruksi adalah...',
+            options: ['RAM', 'CPU', 'SSD', 'GPU'],
+            answer: 1,
+            difficulty: 'Sistem Komputer',
+            explanation: 'CPU (Central Processing Unit) mengeksekusi instruksi program dan melakukan operasi aritmatika serta logika.'
+          },
+          {
+            q: 'Upaya penipuan digital untuk mencuri kata sandi atau data sensitif dengan menyamar sebagai pihak tepercaya disebut...',
+            options: ['Phishing', 'Firewall', 'Enkripsi', 'Backup'],
+            answer: 0,
+            difficulty: 'Keamanan Siber',
+            explanation: 'Phishing adalah teknik rekayasa sosial melalui pesan/situs palsu untuk mencuri kredensial akun pengguna.'
+          }
+        ]
+      },
+      {
+        id: 'bindo',
+        name: 'Bahasa Indonesia',
+        category: 'sosial',
+        icon: 'book-type',
+        color: 'rose',
+        desc: 'Ejaan PUEBI/EYD, majas sastra, ide pokok paragraf, dan struktur teks.',
+        questions: [
+          {
+            q: 'Penulisan kata baku yang tepat sesuai kaidah Bahasa Indonesia adalah...',
+            options: ['Apotik', 'Resiko', 'Analisis', 'Praktek'],
+            answer: 2,
+            difficulty: 'Kata Baku',
+            explanation: 'Bentuk baku yang benar menurut KBBI adalah "Analisis" (bukan analisa), serta Apotek, Risiko, dan Praktik.'
+          },
+          {
+            q: 'Majas yang menggambarkan benda mati seolah-olah memiliki sifat atau perilaku seperti manusia disebut...',
+            options: ['Hiperbola', 'Personifikasi', 'Metafora', 'Litotes'],
+            answer: 1,
+            difficulty: 'Gaya Bahasa',
+            explanation: 'Personifikasi memberi sifat insani pada benda mati, contoh: "Angin malam berbisik lembut di dedaunan."'
+          },
+          {
+            q: 'Paragraf yang kalimat utamanya terletak di awal paragraf disebut paragraf...',
+            options: ['Induktif', 'Deduktif', 'Campuran', 'Naratif'],
+            answer: 1,
+            difficulty: 'Struktur Paragraf',
+            explanation: 'Paragraf deduktif diawali dengan pernyataan umum (kalimat utama) di awal lalu diikuti kalimat penjelas.'
+          },
+          {
+            q: 'Penggunaan tanda baca yang tepat pada penulisan tempat dan tanggal surat adalah...',
+            options: [
+              'Gorontalo, 18 November 2026',
+              'Gorontalo; 18 November 2026.',
+              'Gorontalo: 18 November 2026',
+              'Gorontalo - 18 November 2026'
+            ],
+            answer: 0,
+            difficulty: 'EYD V',
+            explanation: 'Tanda koma dipakai di antara nama tempat dan tanggal yang ditulis berurutan tanpa tanda titik di akhir.'
+          },
+          {
+            q: 'Teks yang berisi langkah-langkah atau tahapan untuk melakukan suatu kegiatan secara urut disebut teks...',
+            options: ['Eksplanasi', 'Prosedur', 'Deskripsi', 'Argumentasi'],
+            answer: 1,
+            difficulty: 'Jenis Teks',
+            explanation: 'Teks prosedur memaparkan tujuan serta langkah-langkah berurutan untuk membuat atau mengoperasikan sesuatu.'
+          }
+        ]
+      }
+    ];
+
+    const BOT_PLAYERS = [
+      { name: 'Nadia Putri', level: 6, wins: 18, xp: 540 },
+      { name: 'Rizky Pratama', level: 5, wins: 14, xp: 430 },
+      { name: 'Aulia Rahman', level: 4, wins: 11, xp: 320 },
+      { name: 'Dimas Saputra', level: 3, wins: 7, xp: 210 },
+      { name: 'Siti Rahma', level: 2, wins: 4, xp: 140 }
+    ];
+
+    // --- AUTH & USER STORAGE ---
+    const ACCOUNTS_KEY = 'brainbattle_accounts_v1';
+    const SESSION_KEY = 'brainbattle_session_v1';
+
+    let currentUser = null;
+
+    function getAllAccounts() {
+      const saved = localStorage.getItem(ACCOUNTS_KEY);
+      if (saved) return JSON.parse(saved);
+      // Seed default demo account 'ikmal'
+      const initial = {
+        ikmal: {
+          username: 'ikmal',
+          displayName: 'ikmal',
+          password: '123',
+          grade: 'SMA',
+          matches: 0,
+          wins: 0,
+          xp: 10
+        }
+      };
+      localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(initial));
+      return initial;
+    }
+
+    function saveAllAccounts(accounts) {
+      localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
+    }
+
+    function syncCurrentUser() {
+      if (!currentUser) return;
+      const accounts = getAllAccounts();
+      accounts[currentUser.username] = currentUser;
+      saveAllAccounts(accounts);
+      localStorage.setItem(SESSION_KEY, currentUser.username);
+    }
+
+    function switchAuthTab(tab) {
+      const loginForm = document.getElementById('login-form');
+      const regForm = document.getElementById('register-form');
+      const tabLogin = document.getElementById('tab-login');
+      const tabReg = document.getElementById('tab-register');
+      document.getElementById('auth-alert').classList.add('hidden');
+
+      if (tab === 'login') {
+        loginForm.classList.remove('hidden');
+        regForm.classList.add('hidden');
+        tabLogin.className = 'py-2 rounded-lg text-xs font-bold bg-violet-600 text-white transition-all';
+        tabReg.className = 'py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all';
+      } else {
+        loginForm.classList.add('hidden');
+        regForm.classList.remove('hidden');
+        tabReg.className = 'py-2 rounded-lg text-xs font-bold bg-violet-600 text-white transition-all';
+        tabLogin.className = 'py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all';
+      }
+    }
+
+    function showAuthError(msg) {
+      const box = document.getElementById('auth-alert');
+      document.getElementById('auth-alert-text').textContent = msg;
+      box.classList.remove('hidden');
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const uname = document.getElementById('login-username').value.trim().toLowerCase();
+      const pass = document.getElementById('login-password').value;
+      const accounts = getAllAccounts();
+
+      if (!accounts[uname]) {
+        showAuthError('Username tidak ditemukan. Silakan daftar akun baru atau gunakan Akun Demo.');
+        return;
+      }
+      if (accounts[uname].password !== pass) {
+        showAuthError('Kata sandi salah. Coba periksa kembali.');
+        return;
+      }
+
+      enterApp(accounts[uname]);
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      const displayName = document.getElementById('reg-name').value.trim();
+      const uname = document.getElementById('reg-username').value.trim().toLowerCase().replace(/\s+/g, '');
+      const grade = document.getElementById('reg-grade').value;
+      const pass = document.getElementById('reg-password').value;
+
+      if (!uname) {
+        showAuthError('Username tidak valid.');
+        return;
+      }
+
+      const accounts = getAllAccounts();
+      if (accounts[uname]) {
+        showAuthError('Username sudah digunakan, pilih username lain.');
+        return;
+      }
+
+      const newUser = {
+        username: uname,
+        displayName: displayName || uname,
+        password: pass,
+        grade: grade,
+        matches: 0,
+        wins: 0,
+        xp: 10
+      };
+
+      accounts[uname] = newUser;
+      saveAllAccounts(accounts);
+      enterApp(newUser);
+    }
+
+    function loginAsDemo() {
+      const accounts = getAllAccounts();
+      enterApp(accounts['ikmal']);
+    }
+
+    function enterApp(userObj) {
+      currentUser = userObj;
+      localStorage.setItem(SESSION_KEY, currentUser.username);
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('app-shell').classList.remove('hidden');
+      updateStatsUI();
+      renderSubjectCards();
+      switchView('dashboard');
+      lucide.createIcons();
+    }
+
+    function logoutUser() {
+      localStorage.removeItem(SESSION_KEY);
+      currentUser = null;
+      document.getElementById('app-shell').classList.add('hidden');
+      document.getElementById('auth-screen').classList.remove('hidden');
+      document.getElementById('login-username').value = '';
+      document.getElementById('login-password').value = '';
+      document.getElementById('auth-alert').classList.add('hidden');
+    }
+
+    // --- LEVEL & STATS ---
+    function getLevelInfo(xp) {
+      const level = Math.floor(xp / 100) + 1;
+      const currentLevelXp = xp % 100;
+      const neededXp = 100 - currentLevelXp;
+      return { level, currentLevelXp, neededXp };
+    }
+
+    function updateStatsUI() {
+      if (!currentUser) return;
+      const { level, currentLevelXp, neededXp } = getLevelInfo(currentUser.xp);
+      const initialLetter = (currentUser.displayName || currentUser.username).charAt(0).toUpperCase();
+
+      document.getElementById('sidebar-username').textContent = currentUser.displayName;
+      document.getElementById('hero-username').textContent = currentUser.displayName;
+      document.getElementById('sidebar-avatar').textContent = initialLetter;
+      document.getElementById('top-avatar').textContent = initialLetter;
+
+      document.getElementById('stat-matches').textContent = currentUser.matches;
+      document.getElementById('stat-wins').textContent = currentUser.wins;
+      document.getElementById('stat-xp').textContent = `${currentUser.xp} XP`;
+      document.getElementById('stat-level-badge').textContent = `Level ${level}`;
+
+      const paddedLevel = String(level).padStart(2, '0');
+      document.getElementById('sidebar-level-tag').textContent = `Level ${paddedLevel} Player`;
+      document.getElementById('progress-level-title').textContent = `Level ${level}`;
+      document.getElementById('progress-xp-fraction').textContent = `${currentLevelXp}/100 XP`;
+      document.getElementById('progress-bar-fill').style.width = `${currentLevelXp}%`;
+      document.getElementById('progress-xp-remaining').textContent = `${neededXp} XP lagi menuju Level ${level + 1}`;
+    }
+
+    // --- QUIZ ENGINE STATE ---
+    let gameMode = 'latihan';
+    let currentFilter = 'all';
+    let activeSubject = null;
+    let currentQuestionIndex = 0;
+    let quizScoreCount = 0;
+    let answeredCurrent = false;
+    let timerInterval = null;
+    let timeLeft = 15;
+
+    function switchView(viewName) {
+      clearInterval(timerInterval);
+      const views = ['dashboard', 'arena', 'quiz', 'result', 'leaderboard'];
+      views.forEach(v => {
+        document.getElementById(`view-${v}`).classList.add('hidden');
+      });
+      document.getElementById(`view-${viewName}`).classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('nav-item-active', 'text-white');
+        btn.classList.add('text-slate-400');
+      });
+
+      const activeNav = document.getElementById(`nav-${viewName === 'quiz' || viewName === 'result' ? 'arena' : viewName}`);
+      if (activeNav) {
+        activeNav.classList.add('nav-item-active');
+        activeNav.classList.remove('text-slate-400');
+      }
+
+      const crumbMap = {
+        dashboard: 'DASHBOARD',
+        arena: 'GAME MODES',
+        quiz: activeSubject ? activeSubject.name.toUpperCase() : 'QUIZ ARENA',
+        result: 'HASIL PERTANDINGAN',
+        leaderboard: 'LEADERBOARD'
+      };
+      document.getElementById('header-breadcrumb').textContent = crumbMap[viewName] || 'DASHBOARD';
+
+      if (viewName === 'leaderboard') renderLeaderboard();
+      if (window.innerWidth < 1024) {
+        document.getElementById('sidebar').classList.add('-translate-x-full');
+        document.getElementById('mobile-overlay').classList.add('hidden');
+      }
+      lucide.createIcons();
+    }
+
+    function toggleMobileSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('mobile-overlay');
+      sb.classList.toggle('-translate-x-full');
+      ov.classList.toggle('hidden');
+    }
+
+    function toggleHowToModal(show) {
+      const modal = document.getElementById('howto-modal');
+      if (show) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      } else {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function setGameMode(mode) {
+      gameMode = mode;
+      const btnLatihan = document.getElementById('mode-btn-latihan');
+      const btnBlitz = document.getElementById('mode-btn-blitz');
+      if (mode === 'latihan') {
+        btnLatihan.className = 'px-3.5 py-2 rounded-lg text-xs font-bold bg-violet-600 text-white transition-all';
+        btnBlitz.className = 'px-3.5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all flex items-center gap-1.5';
+      } else {
+        btnBlitz.className = 'px-3.5 py-2 rounded-lg text-xs font-bold bg-amber-500 text-slate-950 transition-all flex items-center gap-1.5';
+        btnLatihan.className = 'px-3.5 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition-all';
+      }
+    }
+
+    function filterSubjects(cat) {
+      currentFilter = cat;
+      document.querySelectorAll('.filter-chip').forEach(chip => {
+        if (chip.dataset.filter === cat) {
+          chip.className = 'filter-chip px-3.5 py-1.5 rounded-full text-xs font-semibold bg-violet-600 text-white';
+        } else {
+          chip.className = 'filter-chip px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#131626] text-slate-400 hover:text-white border border-[#22263c]';
+        }
+      });
+      renderSubjectCards();
+    }
+
+    function getColorClasses(color) {
+      const map = {
+        violet: { bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/25' },
+        emerald: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/25' },
+        amber: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/25' },
+        sky: { bg: 'bg-sky-500/10', text: 'text-sky-400', border: 'border-sky-500/25' },
+        indigo: { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/25' },
+        rose: { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/25' }
+      };
+      return map[color] || map.violet;
+    }
+
+    function renderSubjectCards() {
+      const dashGrid = document.getElementById('dashboard-subjects-grid');
+      const arenaGrid = document.getElementById('arena-subjects-grid');
+
+      const buildCardHTML = (sub) => {
+        const c = getColorClasses(sub.color);
+        return `
+          <div onclick="startSubjectQuiz('${sub.id}')" class="group bg-[#111320] hover:bg-[#151829] border border-[#1d2136] hover:border-violet-500/40 rounded-2xl p-5 flex flex-col justify-between transition-all cursor-pointer">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <div class="w-11 h-11 rounded-xl ${c.bg} border ${c.border} flex items-center justify-center ${c.text}">
+                  <i data-lucide="${sub.icon}" class="w-5 h-5"></i>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#191d30] text-slate-300 border border-[#252a45]">
+                  +${sub.questions.length * 20} XP
+                </span>
+              </div>
+              <h3 class="text-base font-bold text-white group-hover:text-violet-300 transition-colors">${sub.name}</h3>
+              <p class="text-xs text-slate-400 mt-1.5 leading-relaxed line-clamp-2">${sub.desc}</p>
+            </div>
+            <div class="pt-4 mt-4 border-t border-[#1b1f33] flex items-center justify-between text-xs">
+              <span class="text-slate-500 font-medium">${sub.questions.length} Pertanyaan</span>
+              <span class="font-bold text-violet-400 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                Mulai Kuis <i data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+              </span>
+            </div>
+          </div>
+        `;
+      };
+
+      dashGrid.innerHTML = SUBJECTS_DATA.slice(0, 3).map(buildCardHTML).join('');
+      const filtered = currentFilter === 'all'
+        ? SUBJECTS_DATA
+        : SUBJECTS_DATA.filter(s => s.category === currentFilter);
+      arenaGrid.innerHTML = filtered.map(buildCardHTML).join('');
+      lucide.createIcons();
+    }
+
+    // --- START & RUN QUIZ ---
+    function startSubjectQuiz(subjectId) {
+      activeSubject = SUBJECTS_DATA.find(s => s.id === subjectId);
+      if (!activeSubject) return;
+
+      currentQuestionIndex = 0;
+      quizScoreCount = 0;
+      switchView('quiz');
+      renderQuestion();
+    }
+
+    function retryCurrentSubject() {
+      if (activeSubject) startSubjectQuiz(activeSubject.id);
+    }
+
+    function quitQuiz() {
+      clearInterval(timerInterval);
+      switchView('dashboard');
+    }
+
+    function renderQuestion() {
+      clearInterval(timerInterval);
+      answeredCurrent = false;
+
+      const qObj = activeSubject.questions[currentQuestionIndex];
+      const totalQ = activeSubject.questions.length;
+
+      document.getElementById('quiz-subject-badge').textContent = activeSubject.name;
+      document.getElementById('quiz-progress-text').textContent = `Pertanyaan ${currentQuestionIndex + 1} dari ${totalQ}`;
+      document.getElementById('quiz-progress-bar').style.width = `${((currentQuestionIndex + 1) / totalQ) * 100}%`;
+      document.getElementById('quiz-difficulty-tag').textContent = qObj.difficulty;
+      document.getElementById('quiz-question-text').textContent = qObj.q;
+
+      document.getElementById('quiz-explanation-box').classList.add('hidden');
+      document.getElementById('quiz-next-btn').classList.add('hidden');
+      document.getElementById('quiz-next-label').textContent =
+        currentQuestionIndex === totalQ - 1 ? 'Lihat Hasil Akhir' : 'Soal Berikutnya';
+
+      const letters = ['A', 'B', 'C', 'D'];
+      const optionsContainer = document.getElementById('quiz-options-container');
+      optionsContainer.innerHTML = qObj.options.map((opt, idx) => `
+        <button onclick="selectAnswer(${idx})" id="opt-btn-${idx}" class="w-full text-left p-4 rounded-2xl bg-[#16192b] hover:bg-[#1c2036] border border-[#252a45] hover:border-violet-500/50 transition-all flex items-center gap-3.5 group cursor-pointer">
+          <span id="opt-letter-${idx}" class="w-8 h-8 rounded-xl bg-[#0e101d] border border-[#272c47] group-hover:border-violet-500/50 flex items-center justify-center text-xs font-extrabold text-slate-300 shrink-0">
+            ${letters[idx]}
+          </span>
+          <span class="text-sm font-medium text-slate-200">${opt}</span>
+        </button>
+      `).join('');
+
+      if (gameMode === 'blitz') {
+        timeLeft = 15;
+        document.getElementById('quiz-timer-text').textContent = `${timeLeft}s`;
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          document.getElementById('quiz-timer-text').textContent = `${timeLeft}s`;
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            selectAnswer(-1);
+          }
+        }, 1000);
+      } else {
+        document.getElementById('quiz-timer-text').textContent = 'Santai';
+      }
+
+      lucide.createIcons();
+    }
+
+    function selectAnswer(selectedIndex) {
+      if (answeredCurrent) return;
+      answeredCurrent = true;
+      clearInterval(timerInterval);
+
+      const qObj = activeSubject.questions[currentQuestionIndex];
+      const correctIdx = qObj.answer;
+      const isCorrect = selectedIndex === correctIdx;
+
+      if (isCorrect) quizScoreCount++;
+
+      qObj.options.forEach((_, idx) => {
+        const btn = document.getElementById(`opt-btn-${idx}`);
+        const letter = document.getElementById(`opt-letter-${idx}`);
+        btn.disabled = true;
+        btn.classList.remove('hover:bg-[#1c2036]', 'hover:border-violet-500/50', 'cursor-pointer');
+
+        if (idx === correctIdx) {
+          btn.classList.remove('bg-[#16192b]', 'border-[#252a45]');
+          btn.classList.add('bg-emerald-500/15', 'border-emerald-500/60');
+          letter.classList.add('bg-emerald-500', 'text-slate-950', 'border-emerald-400');
+        } else if (idx === selectedIndex && !isCorrect) {
+          btn.classList.remove('bg-[#16192b]', 'border-[#252a45]');
+          btn.classList.add('bg-rose-500/15', 'border-rose-500/60');
+          letter.classList.add('bg-rose-500', 'text-white', 'border-rose-400');
+        } else {
+          btn.classList.add('opacity-50');
+        }
+      });
+
+      document.getElementById('quiz-explanation-text').textContent = qObj.explanation;
+      document.getElementById('quiz-explanation-box').classList.remove('hidden');
+      document.getElementById('quiz-next-btn').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function nextQuestion() {
+      if (currentQuestionIndex < activeSubject.questions.length - 1) {
+        currentQuestionIndex++;
+        renderQuestion();
+      } else {
+        finishQuiz();
+      }
+    }
+
+    function finishQuiz() {
+      const totalQ = activeSubject.questions.length;
+      const percentage = Math.round((quizScoreCount / totalQ) * 100);
+      const earnedXp = quizScoreCount * 20;
+      const isVictory = percentage >= 80;
+
+      currentUser.matches += 1;
+      if (isVictory) currentUser.wins += 1;
+      currentUser.xp += earnedXp;
+      syncCurrentUser();
+      updateStatsUI();
+
+      document.getElementById('result-score').textContent = `${percentage}%`;
+      document.getElementById('result-correct').textContent = `${quizScoreCount}/${totalQ}`;
+      document.getElementById('result-xp').textContent = `+${earnedXp} XP`;
+
+      const badge = document.getElementById('result-badge');
+      const title = document.getElementById('result-title');
+      const subtitle = document.getElementById('result-subtitle');
+
+      if (isVictory) {
+        badge.textContent = 'VICTORY ACHIEVED';
+        badge.className = 'px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
+        title.textContent = 'Kemenangan Mutlak!';
+        subtitle.textContent = `Hebat, ${currentUser.displayName}! Kamu menguasai materi ${activeSubject.name}.`;
+      } else {
+        badge.textContent = 'TRAINING COMPLETE';
+        badge.className = 'px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase bg-amber-500/15 text-amber-300 border border-amber-500/30';
+        title.textContent = 'Terus Berlatih!';
+        subtitle.textContent = `Raih minimal 80% skor benar pada ${activeSubject.name} untuk mencetak Victory.`;
+      }
+
+      switchView('result');
+    }
+
+    // --- LEADERBOARD ---
+    function renderLeaderboard() {
+      const { level } = getLevelInfo(currentUser.xp);
+      const accounts = getAllAccounts();
+
+      const registeredList = Object.values(accounts).map(acc => {
+        const accLvl = getLevelInfo(acc.xp).level;
+        return {
+          name: acc.displayName,
+          username: acc.username,
+          level: accLvl,
+          wins: acc.wins,
+          xp: acc.xp,
+          isUser: acc.username === currentUser.username
+        };
+      });
+
+      const combined = [
+        ...BOT_PLAYERS.map(b => ({ ...b, isUser: false })),
+        ...registeredList
+      ].sort((a, b) => b.xp - a.xp);
+
+      const userRank = combined.findIndex(p => p.isUser) + 1;
+      document.getElementById('my-rank-badge').textContent = `#${userRank}`;
+
+      const tbody = document.getElementById('leaderboard-tbody');
+      tbody.innerHTML = combined.map((player, idx) => {
+        const rank = idx + 1;
+        let rankBadge = `<span class="font-bold text-slate-400">#${rank}</span>`;
+        if (rank === 1) rankBadge = `<span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-extrabold text-xs">🥇 #1</span>`;
+        if (rank === 2) rankBadge = `<span class="px-2 py-0.5 rounded-md bg-slate-300/20 text-slate-200 font-extrabold text-xs">🥈 #2</span>`;
+        if (rank === 3) rankBadge = `<span class="px-2 py-0.5 rounded-md bg-orange-500/20 text-orange-300 font-extrabold text-xs">🥉 #3</span>`;
+
+        return `
+          <tr class="${player.isUser ? 'bg-violet-600/15' : 'hover:bg-white/[0.02]'} transition-colors">
+            <td class="py-3.5 px-5">${rankBadge}</td>
+            <td class="py-3.5 px-5 font-semibold text-white flex items-center gap-2.5">
+              <div class="w-7 h-7 rounded-full ${player.isUser ? 'bg-violet-600' : 'bg-[#1d2238]'} flex items-center justify-center text-xs font-bold">
+                ${player.name.charAt(0).toUpperCase()}
+              </div>
+              <span>${player.name} ${player.isUser ? '<span class="ml-1.5 text-[10px] px-2 py-0.5 rounded-full bg-violet-500/30 text-violet-200">Kamu</span>' : ''}</span>
+            </td>
+            <td class="py-3.5 px-5 text-slate-300 text-xs font-medium">Level ${player.level}</td>
+            <td class="py-3.5 px-5 text-slate-300 text-xs">${player.wins} Wins</td>
+            <td class="py-3.5 px-5 text-right font-extrabold text-violet-400">${player.xp} XP</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // --- INIT SESSION ON LOAD ---
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedSession = localStorage.getItem(SESSION_KEY);
+      const accounts = getAllAccounts();
+      if (savedSession && accounts[savedSession]) {
+        enterApp(accounts[savedSession]);
+      } else {
+        document.getElementById('auth-screen').classList.remove('hidden');
+        document.getElementById('app-shell').classList.add('hidden');
+        lucide.createIcons();
+      }
+    });
+  </script>
+</body>
+</html>
